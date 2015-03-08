@@ -5,7 +5,7 @@ Converts Compiled Valve Texture (.vtex_c) files to Targa (.tga) files.
 
 ### Dependencies
  
- * [ImageMagick] (http://www.imagemagick.org/) For writing .tga files.
+ * [ImageMagick] (http://www.imagemagick.org/) For reading DXT1/DXT5 images and writing .tga files.
 
 ### Compiling
 
