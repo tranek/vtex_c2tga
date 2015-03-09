@@ -115,25 +115,11 @@ int main(int argc, char* argv[])
 
 
 	memcpy(DATA_offset_array, memblock + start_of_DATA_header + 4, 4);
-	/*for(i=0; i<4; i++) {
-		printf("%02x ", DATA_offset_array[i]);
-	}
-	printf("\n");*/
 
 	DATA_offset = *(int *)DATA_offset_array + start_of_DATA_header + 4;
 
-	/*for(i=DATA_offset; i<DATA_offset + 2; i++) {
-		printf("%02x ", memblock[i]);
-	}
-	printf("\n");*/
-
 	width_char = memblock + DATA_offset;
 	width = *(short *)width_char;
-
-	/*(for(i=0; i<2; i++) {
-		printf("%02x ", width[i]);
-	}
-	printf("\n");*/
 
 	std::cout << "Width: " << width << std::endl;
 
@@ -146,6 +132,8 @@ int main(int argc, char* argv[])
 	
 	format = (short)*(memblock + DATA_offset + 6);
 	switch(format) {
+		case RGBA8888:
+			format_name.append(" (RGBA8888)");
 		case DXT1:
 			format_name.append(" (DXT1)");
 			break;
@@ -162,12 +150,6 @@ int main(int argc, char* argv[])
 	std::cout << "Number of Mips: " << mip_count << std::endl;
 
 	flags = *(uint64_t *)(memblock + DATA_offset + 14);
-	//std::cout << "Flags: " << flags << std::endl;
-
-	/*for(i=0; i<8; i++) {
-		printf("%02x ", flags[i]);
-	}
-	printf("\n");*/
 
 	if (flags & TSPEC_RENDER_TARGET) {
 		render_target = "true";
@@ -212,21 +194,11 @@ int main(int argc, char* argv[])
 	reflectivity = memblock + DATA_offset + 22;
 	std::cout << "Reflectivity: " << *(int *)reflectivity << std::endl;
 
-	/*for(i=0; i<4; i++) {
-		printf("%02x ", reflectivity[i]);
-	}
-	printf("\n");*/
-
 	// Get the start location of mip 0
 	char length_of_DATA_block[2];
 	char * start_of_image_data;
 
 	memcpy(length_of_DATA_block, memblock + start_of_DATA_header + 8, 2);
-	/*for(i=0; i<2; i++) {
-		printf("%02x ", length_of_DATA_block[i]);
-	}
-	printf("\n");
-	std::cout << "Length of DATA block: " << *(short *)length_of_DATA_block << std::endl;*/
 
 	start_of_image_data = memblock + DATA_offset + *(short *)length_of_DATA_block;
 
@@ -236,13 +208,14 @@ int main(int argc, char* argv[])
 	int mip_height = height;
 	int mip_size = 0;
 	for (i=1; i<mip_count; i++) {
-		//printf("Mip level: %d\n", i);
 		mip_size = 0;
 		mip_width /= 2;
 		mip_height /= 2;
 		if (mip_width <= 1 || mip_height <= 1)
 			break;
 		switch (format) {
+			case RGBA8888:
+				mip_size = mip_width * mip_height * 4;
 			case DXT1:
 				mip_size = mip_width * mip_height / 2;
 				break;
@@ -255,7 +228,6 @@ int main(int argc, char* argv[])
 		}
 		offset_of_mip0 += mip_size;
 	}
-	//std::cout << "Offset of mip0: " << offset_of_mip0 << std::endl;
 
 	// Calculate the number of images per mip level
 	int num_images_per_mip_level = depth;
@@ -271,9 +243,13 @@ int main(int argc, char* argv[])
 		char dxt1_header[] = {0x44, 0x44, 0x53, 0x20, 0x7C, 0x00, 0x00, 0x00, 0x07, 0x10, 0x08, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0x44, 0x58, 0x54, 0x31, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 		char dxt5_header[] = {0x44, 0x44, 0x53, 0x20, 0x7C, 0x00, 0x00, 0x00, 0x07, 0x10, 0x08, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0x44, 0x58, 0x54, 0x35, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 		int header_size = 0;
-		int size_of_formatted_image;
+		int size_of_formatted_image = 0;
+		std::string input_format = "RGBA";
 
 		switch (format) {
+			case RGBA8888: // no header
+				size_of_formatted_image = width * height * 4;
+				break;
 			case DXT1: // 0x80 bytes long
 				header_size = 128;
 				header = new char[header_size];
@@ -291,6 +267,8 @@ int main(int argc, char* argv[])
 				memcpy(header, dxt1_header, header_size);
 
 				size_of_formatted_image = width * height / 2;
+
+				input_format = "DDS";
 				break;
 			case DXT5: // 0x80 bytes long
 				header_size = 128;
@@ -309,6 +287,7 @@ int main(int argc, char* argv[])
 				memcpy(header, dxt5_header, header_size);
 
 				size_of_formatted_image = width * height;
+				input_format = "DDS";
 				break;
 			default:
 				printf("Invalid image format: %hd.", format);
@@ -318,38 +297,20 @@ int main(int argc, char* argv[])
 
 		// Attach header to image data
 		char * out_data = new char[size_of_formatted_image+header_size];
-		memcpy(out_data, header, header_size);
+		if (header_size > 0) {
+			memcpy(out_data, header, header_size);
+		}
 		memcpy(out_data+header_size, start_of_image_data + offset_of_mip0 + (size_of_formatted_image * i), size_of_formatted_image);
-
-		/*for(i=0; i<128; i++) {
-			printf("%02x ", dxt1_header[i]);
-		}
-		printf("\n");*/
-
-		/*for(i=0; i<128; i++) {
-			printf("%02x ", header[i]);
-		}
-		printf("\n");*/
-
-		/*for(i=0; i<size_of_formatted_image+header_size; i++) {
-			printf("%02x ", out_data[i]);
-		}
-		printf("\n");*/
-
-
-		/*FILE * pFile;
-		pFile = fopen ("test.dds", "wb");
-		fwrite (out_data , sizeof(char), size_of_formatted_image+header_size, pFile);
-		fclose (pFile);*/
-
 
 		// Run image data through Imagemagick and output a .tga
 		Image image;
 		image.type(::Magick::TrueColorType);
 		image.modifyImage();
 
+		std::string dimensions = std::to_string(width) + "x" + std::to_string(height);
+
 		Blob blob(out_data, size_of_formatted_image+header_size);
-		image.read(blob, "512x256", "DDS");
+		image.read(blob, dimensions.c_str(), input_format.c_str());
 
 		std::string out_name(argv[2]);
 
