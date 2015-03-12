@@ -3,9 +3,13 @@ vtex_c2tga
 
 Converts Compiled Valve Texture (.vtex_c) files to Targa (.tga) files.
 
+### Notes
+
+ * Only handles vtex files encoded in DXT1, DXT5/DXT5_nm, and RGBA as those are the only formats used by Dota2 so far.
+
 ### Dependencies
  
- * [ImageMagick] (http://www.imagemagick.org/) For reading DXT1/DXT5 images and writing .tga files.
+ * [ImageMagick] (http://www.imagemagick.org/) For reading DXT1/DXT5/RGBA images and writing .tga files.
 
 ### Compiling
 
